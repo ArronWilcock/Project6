@@ -1,7 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
 
-const userRoutes = require('./routes/user');
+const saucesRoutes = require("./routes/sauces");
+const userRoutes = require("./routes/user");
 
 const app = express();
 
@@ -9,7 +11,7 @@ app.use(express.json());
 
 mongoose
   .connect(
-    "mongodb+srv://arronwilcock:aNY9w8Blxag3dVos@project6cluster.inokijf.mongodb.net/?retryWrites=true&w=majority"
+    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@project6cluster.inokijf.mongodb.net/?retryWrites=true&w=majority`
   )
   .then(() => {
     console.log("successfully connected to mongo db atlas");
@@ -32,6 +34,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/auth', userRoutes);
+app.use("/images", express.static(path.join(__dirname, "images")));
+
+app.use("/api/auth", userRoutes);
+app.use("/api/sauces", saucesRoutes);
 
 module.exports = app;
