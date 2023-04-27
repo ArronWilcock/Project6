@@ -1,4 +1,5 @@
 const Sauce = require("../models/sauce");
+const Like = require("../models/like");
 const fs = require("fs");
 
 exports.createSauce = (req, res, next) => {
@@ -63,34 +64,34 @@ exports.updateSauce = (req, res, next) => {
     const url = req.protocol + "://" + req.get("host");
     req.body.sauce = JSON.parse(req.body.sauce);
     sauce = {
-        _id: req.params.id,
-        name: req.body.sauce.name,
-        manufacturer: req.body.sauce.manufacturer,
-        description: req.body.sauce.description,
-        heat: req.body.sauce.heat,
-        imageUrl: url + "/images/" + req.file.filename,
-        mainPepper: req.body.sauce.mainPepper,
-        userId: req.body.sauce.userId,
-        likes: 0,
-        dislikes: 0,
-        usersLiked: [],
-        usersDisliked: [],
-      };
+      _id: req.params.id,
+      name: req.body.sauce.name,
+      manufacturer: req.body.sauce.manufacturer,
+      description: req.body.sauce.description,
+      heat: req.body.sauce.heat,
+      imageUrl: url + "/images/" + req.file.filename,
+      mainPepper: req.body.sauce.mainPepper,
+      userId: req.body.sauce.userId,
+      likes: 0,
+      dislikes: 0,
+      usersLiked: [],
+      usersDisliked: [],
+    };
   } else {
     sauce = {
-        _id: req.params.id,
-        name: req.body.name,
-        manufacturer: req.body.manufacturer,
-        description: req.body.description,
-        heat: req.body.heat,
-        imageUrl: req.body.imageUrl,
-        mainPepper: req.body.mainPepper,
-        userId: req.body.userId,
-        likes: 0,
-        dislikes: 0,
-        usersLiked: [],
-        usersDisliked: [],
-      };
+      _id: req.params.id,
+      name: req.body.name,
+      manufacturer: req.body.manufacturer,
+      description: req.body.description,
+      heat: req.body.heat,
+      imageUrl: req.body.imageUrl,
+      mainPepper: req.body.mainPepper,
+      userId: req.body.userId,
+      likes: 0,
+      dislikes: 0,
+      usersLiked: [],
+      usersDisliked: [],
+    };
   }
   Sauce.updateOne({ _id: req.params.id }, sauce)
     .then(() => {
@@ -125,18 +126,21 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {
-    sauce = {
-        _id: req.params.id,
-        name: req.body.name,
-        manufacturer: req.body.manufacturer,
-        description: req.body.description,
-        heat: req.body.heat,
-        imageUrl: req.body.imageUrl,
-        mainPepper: req.body.mainPepper,
-        userId: req.body.userId,
-        likes: 0,
-        dislikes: 0,
-        usersLiked: [],
-        usersDisliked: [],
-      };
-}
+  let like = new Like({
+    userId: req.body.userId,
+    like: req.body.like,
+  });
+
+  Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+    const usersLiked = sauce.usersLiked;
+    const usersDisliked = sauce.usersDisliked;
+    if (like.like == 1 && !usersLiked.includes(like.userId)) {
+      sauce.likes += 1;
+      usersLiked.push(like.userId);
+    } else if (like.like == -1 && !usersDisliked.includes(like.userId)) {
+      sauce.dislikes += 1;
+      usersDisliked.push(like.userId);
+    } else if (like.like == 0 && usersLiked.includes(like.userId)) {
+    }
+  });
+};
