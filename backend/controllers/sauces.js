@@ -1,5 +1,4 @@
 const Sauce = require("../models/sauce");
-const Like = require("../models/like");
 const fs = require("fs");
 
 exports.createSauce = (req, res, next) => {
@@ -126,21 +125,24 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {
-  let like = new Like({
-    userId: req.body.userId,
-    like: req.body.like,
-  });
+  // let like = new Like({
+  //   userId: req.body.userId,
+  //   like: req.body.like,
+  // });
 
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     const usersLiked = sauce.usersLiked;
     const usersDisliked = sauce.usersDisliked;
-    if (like.like == 1 && !usersLiked.includes(like.userId)) {
-      sauce.likes += 1;
-      usersLiked.push(like.userId);
-    } else if (like.like == -1 && !usersDisliked.includes(like.userId)) {
-      sauce.dislikes += 1;
-      usersDisliked.push(like.userId);
-    } else if (like.like == 0 && usersLiked.includes(like.userId)) {
+    const userId = req.body.userId;
+    const like = req.body.like;
+    if (like === 1 && !usersLiked.includes(userId)) {
+      sauce.likes++;
+      usersLiked.push(userId);
+    } else if (like === -1 && !usersDisliked.includes(userId)) {
+      sauce.dislikes++;
+      usersDisliked.push(userId);
+    } else if (like === 0 && usersLiked.includes(userId)) {
+      // find if user id is in either array and remove, then decrement the like or dislike total
     }
   });
 };
