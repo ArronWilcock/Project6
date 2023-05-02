@@ -125,24 +125,39 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {
-  // let like = new Like({
-  //   userId: req.body.userId,
-  //   like: req.body.like,
-  // });
-
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     const usersLiked = sauce.usersLiked;
     const usersDisliked = sauce.usersDisliked;
     const userId = req.body.userId;
     const like = req.body.like;
     if (like === 1 && !usersLiked.includes(userId)) {
-      sauce.likes++;
       usersLiked.push(userId);
     } else if (like === -1 && !usersDisliked.includes(userId)) {
-      sauce.dislikes++;
       usersDisliked.push(userId);
-    } else if (like === 0 && usersLiked.includes(userId)) {
+    } else if (
+      like === 0 &&
+      (usersLiked.includes(userId) || usersDisliked.includes(userId))
+    ) {
       // find if user id is in either array and remove, then decrement the like or dislike total
+      likesIndex = usersLiked.indexOf(userId);
+      dislikesIndex = usersDisliked.indexOf(userId);
+      usersLiked.splice(likesIndex, 1);
+      usersDisliked.splice(dislikesIndex, 1);
     }
+
+    sauce.likes = usersLiked.length;
+    sauce.dislikes = usersDisliked.length;
+
+    Sauce.updateOne({ _id: req.params.id }, sauce)
+      .then(() => {
+        res.status(201).json({
+          message: "Sauce updated successfully!",
+        });
+      })
+      .catch((error) => {
+        res.status(400).json({
+          error: error,
+        });
+      });
   });
 };
