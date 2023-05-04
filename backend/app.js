@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const mongodbErrorHandler = require("mongoose-mongodb-errors");
 const path = require("path");
 
 const saucesRoutes = require("./routes/sauces");
@@ -33,6 +34,8 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+mongoose.plugin(mongodbErrorHandler);
 
 app.use("/images", express.static(path.join(__dirname, "images")));
 
