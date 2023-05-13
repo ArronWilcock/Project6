@@ -1,12 +1,17 @@
+// controllers contain the business logic to keep the code more modular and maintainable
+
+// Required packages & routes declared
 const Sauce = require("../models/sauce");
 const fs = require("fs");
 
+// Create sauce Request. This includes creating a sauce without an image file attached
 exports.createSauce = (req, res, next) => {
   let sauce = null;
   let parsedSauce = null;
   let imageUrl = null;
   if (req.file) {
     parsedSauce = JSON.parse(req.body.sauce);
+    // logic to retrieve the entire url for the image file
     const url = req.protocol + "://" + req.get("host");
     imageUrl = url + "/images/" + req.file.filename;
   } else {
@@ -39,6 +44,7 @@ exports.createSauce = (req, res, next) => {
     });
 };
 
+// Request to find a specified sauce
 exports.getOneSauce = (req, res, next) => {
   Sauce.findOne({
     _id: req.params.id,
@@ -53,6 +59,7 @@ exports.getOneSauce = (req, res, next) => {
     });
 };
 
+// Request to retrieve all sauces
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
     .then((sauces) => {
@@ -65,6 +72,7 @@ exports.getAllSauces = (req, res, next) => {
     });
 };
 
+// Request to update a sauce. This request updates the sauce (including any image), while maintaining the sauces id
 exports.updateSauce = (req, res, next) => {
   let sauce = new Sauce({ _id: req.params._id });
   if (req.file) {
@@ -113,10 +121,12 @@ exports.updateSauce = (req, res, next) => {
     });
 };
 
+// Request to delete a sauce and remove its linked image from the image folder
 exports.deleteSauce = (req, res, next) => {
   if (req.file) {
     Sauce.findOne({ _id: req.params.id }).then((sauce) => {
       const filename = sauce.imageUrl.split("/images/")[1];
+      // fs.unlink function to remove deleted sauces images from the image folder
       fs.unlink("images/" + filename, () => {
         Sauce.deleteOne({ _id: req.params.id })
           .then(() => {
@@ -146,6 +156,8 @@ exports.deleteSauce = (req, res, next) => {
   }
 };
 
+// Like sauce request. This request ensures that a user can only ever be declared on one of the like options
+// the users id is then added/removed from the liked/disliked array and the array count updated
 exports.likeSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     const usersLiked = sauce.usersLiked;
@@ -181,6 +193,8 @@ exports.likeSauce = (req, res, next) => {
       });
   });
 };
+
+// helper function for removing a user from any like/dislike array they are no longer required in
 function resetLike(usersLiked, userId, usersDisliked) {
   likesIndex = usersLiked.indexOf(userId);
   dislikesIndex = usersDisliked.indexOf(userId);
